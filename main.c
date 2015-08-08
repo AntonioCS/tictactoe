@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>       /* sqrt */
 
 #define TOTAL_SQUARES 9
 #define TOTAL_ROWS 3
@@ -78,6 +79,28 @@ void draw_rectangle(SDL_Renderer *renderer, struct colour colour, SDL_Rect recta
 void clear_screen(SDL_Renderer *renderer) {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(renderer);
+}
+
+/**
+ *
+ *
+ */
+void draw_placeholder(SDL_Renderer *renderer, struct gameSquare *gs, int type) {
+    int point_a_x = gs->rectangle.x;
+    int point_a_y = gs->rectangle.y;
+
+    int point_b_x = point_a_x + gs->rectangle.w;
+    int point_b_y = point_a_y;
+
+    int point_c_x = point_a_x;
+    int point_c_y = point_a_y + gs->rectangle.h;
+
+    int point_d_x = point_b_x;
+    int point_d_y = point_c_y;
+
+    SDL_SetRenderDrawColor(renderer, SQUARE_DEFAULT_COLOUR,255);
+    SDL_RenderDrawLine(renderer, point_a_x, point_a_y, point_d_x, point_d_y);
+    SDL_RenderDrawLine(renderer, point_b_x, point_b_y, point_c_x, point_c_y);
 }
 
 
@@ -173,8 +196,12 @@ int main(int argc, char* args[]) {
                 smaller_square_coords.y = smaller_squares_y;
 
                 //While application is running
+                //-----------------------------------------------
+                //------------------ GAME LOOP ------------------
+                //-----------------------------------------------
                 while (!quit) {
                     int user_move = 0;
+                    bool user_selection = false;
                     //Handle events on queue
                     while (SDL_PollEvent(&e) != 0) {
                         //User requests quit ----------- Quit also with ESCAPE key pressed
@@ -202,6 +229,10 @@ int main(int argc, char* args[]) {
                                 case SDLK_RIGHT:
                                 case SDLK_d:
                                     user_move = USER_MOVED_RIGHT;
+                                    break;
+
+                                case SDLK_SPACE:
+                                    user_selection = true;
                                     break;
                             }
                         }
@@ -247,6 +278,10 @@ int main(int argc, char* args[]) {
                         }
                     }
 
+                    if (user_selection) {
+                        draw_placeholder(renderer, &(gameSquares[selected_square]), 0);
+                    }
+
                     //draw smaller rectangles
                     for (int i = 0; i < TOTAL_SQUARES; ++i) {
                         struct colour colour_used = default_colour;
@@ -260,7 +295,7 @@ int main(int argc, char* args[]) {
                         draw_rectangle(renderer, colour_used, gameSquares[i].rectangle, false, 255);
                     }
 
-                    SDL_RenderPresent(renderer);                
+                    SDL_RenderPresent(renderer);
                 }
             }
 
